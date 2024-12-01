@@ -41,28 +41,25 @@ defmodule Paraia.DidStorage do
     if MapSet.member?(state, did) do
       {:reply, :already_exists, state}
     else
-      {:reply, :ok, MapSet.put(state, did)}
+      set = MapSet.put(state, did)
+
+      if MapSet.size(set) > 10_000 do
+
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        dids = Enum.map(set, fn item -> [did: item, inserted_at: now, updated_at: now] end)
+        Paraia.BlueSky.User |> Paraia.Repo.insert_all(dids, on_conflict: :nothing)
+        |> dbg()
+
+        {:reply, :ok, MapSet.new()}
+      else
+        {:reply, :ok, set}
+      end
     end
   end
 
   @impl true
   def handle_call(:get_dids, _from, state) do
     {:reply, MapSet.to_list(state), state}
-  end
-
-  @impl true
-  def handle_info(:process_dids, state) do
-    # Placeholder for future repo logic
-    IO.inspect(MapSet.to_list(state), label: "Processing DIDs")
-
-    # Reset state after processing
-    {:noreply, MapSet.new()}
-  end
-
-  # Periodically trigger `:process_dids`
-  def handle_info(:timeout, state) do
-    # 60 seconds
-    Process.send_after(self(), :process_dids, 60_000)
-    {:noreply, state}
   end
 end

@@ -39,9 +39,7 @@ defmodule Paraia.Client.BlueSky.JetStream do
         # Extract the DID from the parsed message
         parsed_msg
         |> Map.get("did")
-        |> dbg()
         |> DidStorage.add_did()
-        |> dbg()
 
       {:error, reason} ->
         Logger.error("Failed to decode JSON: #{inspect(reason)}")

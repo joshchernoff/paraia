@@ -37,6 +37,7 @@ defmodule Paraia.Client.BlueSky.JetStream do
       {:ok, parsed_msg} ->
         # TODO: time to get DID form feed
         parsed_msg
+        |> dbg()
 
       {:error, reason} ->
         Logger.error("Failed to decode JSON: #{inspect(reason)}")

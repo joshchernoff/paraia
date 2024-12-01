@@ -3,9 +3,10 @@ defmodule Paraia.Client.BlueSky.JetStream do
   require Logger
 
   alias Paraia.Client.BlueSky.Authentication
+  alias Paraia.DidStorage
 
   def start_link(_) do
-    url = "wss://jetstream1.us-east.bsky.network/subscribe?wantedCollections[]=app.bsky.feed.post"
+    url = "wss://jetstream1.us-west.bsky.network/subscribe?wantedCollections[]=app.bsky.feed.post"
     user = Paraia.config([:blue_sky, :user])
     pass = Paraia.config([:blue_sky, :pass])
     # Attempt authentication before starting the WebSocket connection
@@ -35,14 +36,25 @@ defmodule Paraia.Client.BlueSky.JetStream do
   def handle_frame({_type, msg}, state) do
     case Jason.decode(msg) do
       {:ok, parsed_msg} ->
-        # TODO: time to get DID form feed
+        # Extract the DID from the parsed message
         parsed_msg
-        |> dbg()
+        |> extract_did()
+        |> DidStorage.add_did()
 
       {:error, reason} ->
         Logger.error("Failed to decode JSON: #{inspect(reason)}")
     end
 
     {:ok, state}
+  end
+
+  # Extract DID from the parsed message, assuming it's part of the message.
+  defp extract_did(parsed_msg) do
+    # Modify this based on how the DID appears in the message
+    # For example, if the DID is nested in a "post" or "actor" field, adjust the path accordingly:
+    case parsed_msg do
+      %{"post" => %{"actor" => did}} -> did
+      _ -> nil
+    end
   end
 end

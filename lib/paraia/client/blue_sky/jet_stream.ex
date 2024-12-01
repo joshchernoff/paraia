@@ -4,16 +4,12 @@ defmodule Paraia.Client.BlueSky.JetStream do
 
   alias Paraia.Client.BlueSky.Authentication
 
-  # fetch from ENV var
-  @username
-  # fetch from ENV var
-  @password
-
   def start_link(_) do
     url = "wss://jetstream1.us-east.bsky.network/subscribe?wantedCollections[]=app.bsky.feed.post"
-
+    user = Paraia.config([:blue_sky, :user])
+    pass = Paraia.config([:blue_sky, :pass])
     # Attempt authentication before starting the WebSocket connection
-    case Authentication.authenticate(@username, @password) do
+    case Authentication.authenticate(user, pass) do
       {:ok, %{access_token: access_token}} ->
         # If authentication is successful, proceed to start the WebSocket
         WebSockex.start_link(url, __MODULE__, %{access_token: access_token})

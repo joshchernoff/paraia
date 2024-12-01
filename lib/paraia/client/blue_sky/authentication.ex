@@ -38,17 +38,18 @@ defmodule Paraia.Client.BlueSky.Authentication do
 
   # Fetch the token from Repo or other storage
   defp get_token do
-    case Repo.get_blue_sky_auth() do
-      [{:tokens, access_token, _refresh_token, expiration}] ->
-        if expiration > :os.system_time(:second) do
-          {:ok, access_token}
-        else
-          {:error, "Token expired"}
-        end
+    # case Repo.get_blue_sky_auth() do
+    #   [{:tokens, access_token, _refresh_token, expiration}] ->
+    #     if expiration > :os.system_time(:second) do
+    #       {:ok, access_token}
+    #     else
+    #       {:error, "Token expired"}
+    #     end
 
-      [] ->
-        {:error, "Token not found"}
-    end
+    #   [] ->
+    #     {:error, "Token not found"}
+    # end
+    {:error, "Token not found"}
   end
 
   # Authenticate with Bluesky API and store the token in the Repo
@@ -59,7 +60,7 @@ defmodule Paraia.Client.BlueSky.Authentication do
     }
 
     case Req.post(@url, json: body) do
-      {:ok, %{status: 200, body: %{"accessJwt" => access_token} = response}} ->
+      {:ok, %{status: 200, body: response}} ->
         # Store the token in Repo (TODO)
         # Repo.insert_or_update_token(response)
 

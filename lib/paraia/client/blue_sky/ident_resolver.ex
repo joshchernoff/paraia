@@ -1,4 +1,4 @@
-defmodule HttpClient.BlueSky.IdentResolver do
+defmodule Paraia.Client.BlueSky.IdentResolver do
   @moduledoc """
   A module to resolve identities based on DID.
 

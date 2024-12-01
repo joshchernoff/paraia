@@ -1,4 +1,4 @@
-defmodule HttpClient.BlueSky.Authentication do
+defmodule Paraia.Client.BlueSky.Authentication do
   @moduledoc """
   Module for handling Bluesky authentication.
   """

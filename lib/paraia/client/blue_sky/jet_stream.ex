@@ -38,8 +38,10 @@ defmodule Paraia.Client.BlueSky.JetStream do
       {:ok, parsed_msg} ->
         # Extract the DID from the parsed message
         parsed_msg
-        |> extract_did()
+        |> Map.get("did")
+        |> dbg()
         |> DidStorage.add_did()
+        |> dbg()
 
       {:error, reason} ->
         Logger.error("Failed to decode JSON: #{inspect(reason)}")
@@ -48,13 +50,5 @@ defmodule Paraia.Client.BlueSky.JetStream do
     {:ok, state}
   end
 
-  # Extract DID from the parsed message, assuming it's part of the message.
-  defp extract_did(parsed_msg) do
-    # Modify this based on how the DID appears in the message
-    # For example, if the DID is nested in a "post" or "actor" field, adjust the path accordingly:
-    case parsed_msg do
-      %{"post" => %{"actor" => did}} -> did
-      _ -> nil
-    end
-  end
+
 end

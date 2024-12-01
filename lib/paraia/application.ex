@@ -14,6 +14,7 @@ defmodule Paraia.Application do
       {Phoenix.PubSub, name: Paraia.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Paraia.Finch},
+      {Paraia.DidStorage, []},
       {Paraia.Client.BlueSky.JetStream, []},
 
       # Start a worker by calling: Paraia.Worker.start_link(arg)

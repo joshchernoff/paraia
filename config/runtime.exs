@@ -65,6 +65,22 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  blue_sky_user =
+    System.get_env("BLUE_SKY_USER") ||
+      raise """
+      environment variable BLUE_SKY_USER is missing.
+      """
+
+  blue_sky_pass =
+    System.get_env("BLUE_SKY_PASS") ||
+      raise """
+      environment variable BLUE_SKY_PASS is missing.
+      """
+
+  config :paraia, :blue_sky,
+    user: blue_sky_user,
+    pass: blue_sky_pass
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

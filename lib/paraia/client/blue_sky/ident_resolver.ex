@@ -1,37 +1,50 @@
 defmodule Paraia.Client.BlueSky.IdentResolver do
   @moduledoc """
-  A module to resolve identities based on DID.
+  A module to resolve identities based on DIDs via a batch request.
 
-  ## Example Usage
-
-      did = "did:plc:1234abcd5678efgh"
-      {:ok, handle} = HttpClient.BlueSky.IdentResolver.resolve_handle(did)
-      {:ok, profile} = HttpClient.BlueSky.IdentResolver.get_profile(handle)
-
-      IO.inspect(profile)
+  Example endpoint:
+  https://public.api.bsky.app/xrpc/app.bsky.actor.getProfiles?actors[]=did1&actors[]=did2
   """
 
-  @api_base "https://bsky.social/xrpc"
+  @api_base "https://public.api.bsky.app/xrpc"
 
-  @spec resolve_handle(String.t()) :: {:ok, String.t()} | {:error, any()}
-  def resolve_handle(did) do
-    url = "#{@api_base}/com.atproto.identity.resolveHandle?did=#{URI.encode(did)}"
+  @doc """
+  Fetches profiles for a list of DIDs.
 
-    case Req.get(url) do
-      {:ok, %{status: 200, body: %{"handle" => handle}}} -> {:ok, handle}
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
-      {:error, reason} -> {:error, {:request_failed, reason}}
+  ## Example
+      iex> get_profiles(["did:example:123", "did:example:456"])
+      {:ok, [%{"did" => "did:example:123", "profile" => ...}, %{"did" => "did:example:456", "profile" => ...}]}
+  """
+  def get_profiles(dids) when is_list(dids) do
+    url = "#{@api_base}/app.bsky.actor.getProfiles"
+    query = build_query(dids)
+
+    case Req.get((url <> query) |> dbg()) do
+      {:ok, %{status: 200, body: body}} ->
+        {:ok, body}
+
+      # parsed = IO.inspect(body)
+
+      # case parsed do
+      #   {:ok, %{"profiles" => profiles}} -> {:ok, profiles}
+      #   {:error, reason} -> {:error, {:json_decode_error, reason}}
+      # end
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, {:http_error, status, body}}
+
+      {:error, reason} ->
+        {:error, {:request_failed, reason}}
     end
   end
 
-  @spec get_profile(String.t()) :: {:ok, map()} | {:error, any()}
-  def get_profile(handle) do
-    url = "#{@api_base}/app.bsky.actor.getProfile?actor=#{URI.encode(handle)}"
+  defp build_query(dids) do
+    # Construct the query string by encoding each DID as `actors[]`
+    query_string =
+      dids
+      |> Enum.map(&"actors[]=#{URI.encode(&1)}")
+      |> Enum.join("&")
 
-    case Req.get(url) do
-      {:ok, %{status: 200, body: body}} -> {:ok, body}
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
-      {:error, reason} -> {:error, {:request_failed, reason}}
-    end
+    "?#{query_string}"
   end
 end

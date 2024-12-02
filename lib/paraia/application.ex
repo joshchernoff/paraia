@@ -2,6 +2,7 @@ defmodule Paraia.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
+  alias Paraia.Pipline.ProfileBroadway
 
   use Application
 
@@ -12,14 +13,16 @@ defmodule Paraia.Application do
       Paraia.Repo,
       {DNSCluster, query: Application.get_env(:paraia, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Paraia.PubSub},
+      {ProfileBroadway, []},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Paraia.Finch},
-      {Paraia.DidStorage, []},
-      {Paraia.Client.BlueSky.JetStream, []},
+      # {Paraia.DidStorage, []},
+      # {Paraia.Client.BlueSky.JetStream, []},
 
       # Start a worker by calling: Paraia.Worker.start_link(arg)
       # {Paraia.Worker, arg},
       # Start to serve requests, typically the last entry
+
       ParaiaWeb.Endpoint
     ]
 

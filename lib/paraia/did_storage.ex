@@ -44,12 +44,10 @@ defmodule Paraia.DidStorage do
       set = MapSet.put(state, did)
 
       if MapSet.size(set) > 10_000 do
-
         now = DateTime.utc_now() |> DateTime.truncate(:second)
 
         dids = Enum.map(set, fn item -> [did: item, inserted_at: now, updated_at: now] end)
         Paraia.BlueSky.User |> Paraia.Repo.insert_all(dids, on_conflict: :nothing)
-        |> dbg()
 
         {:reply, :ok, MapSet.new()}
       else

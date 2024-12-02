@@ -62,7 +62,9 @@ defmodule Paraia.MixProject do
       {:bandit, "~> 1.5"},
       {:req, "~> 0.5.7"},
       {:websockex, "~> 0.4.3"},
-      {:cbor, "~> 1.0.0"}
+      {:cbor, "~> 1.0.0"},
+      {:broadway, "~> 1.1"},
+      {:flow, "~> 1.2"}
     ]
   end
 

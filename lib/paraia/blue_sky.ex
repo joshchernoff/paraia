@@ -66,19 +66,40 @@ defmodule Paraia.BlueSky do
     Repo.query(sql, params)
   end
 
-  def search_users(query) do
-    from(u in User,
-      where:
-        fragment(
-          "to_tsvector('english', coalesce(?, '') || ' ' || coalesce(?, '') || ' ' || coalesce(?, '')) @@ plainto_tsquery(?)",
-          u.handle,
-          u.display_name,
-          u.description,
-          ^query
-        ),
-      order_by: [desc: u.followers_count],
-      limit: 1000
-    )
-    |> Repo.all()
+  def search_users(query, page \\ 0) do
+    limit = 20
+    offset = page * limit
+
+    results =
+      from(u in User,
+        where:
+          fragment(
+            "to_tsvector('english', coalesce(?, '') || ' ' || coalesce(?, '') || ' ' || coalesce(?, '')) @@ plainto_tsquery(?)",
+            u.handle,
+            u.display_name,
+            u.description,
+            ^query
+          ),
+        order_by: [desc: u.followers_count],
+        limit: ^limit,
+        offset: ^offset
+      )
+      |> Repo.all()
+
+    [count] =
+      from(u in User,
+        where:
+          fragment(
+            "to_tsvector('english', coalesce(?, '') || ' ' || coalesce(?, '') || ' ' || coalesce(?, '')) @@ plainto_tsquery(?)",
+            u.handle,
+            u.display_name,
+            u.description,
+            ^query
+          ),
+        select: count(u.did)
+      )
+      |> Repo.all()
+
+    {results, count}
   end
 end

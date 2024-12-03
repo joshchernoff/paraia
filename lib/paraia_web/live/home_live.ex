@@ -4,10 +4,17 @@ defmodule ParaiaWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-5xl mb-20">
-      <.search_field id="descriptions" value={nil} />
+      <.search_field id="descriptions" value={@query} />
+      <h3 :if={@count > 0} class="mt-6">Users Found: <%= @count %></h3>
     </div>
 
-    <div id="user-div" phx-update="stream" class="flex flex-col gap-y-6 max-w-5xl mx-auto">
+    <div
+      id="users"
+      phx-update="stream"
+      phx-viewport-bottom={!@end_of_timeline? && "next-page"}
+      phx-page-loading
+      class="flex flex-col gap-y-6 max-w-5xl mx-auto"
+    >
       <div :for={{id, user} <- @streams.users} id={id} class="relative  w-full h-full">
         <a target="blank" href={"https://bsky.app/profile/#{user.did}"}>
           <div class="w-full h-full opacity-40 absolute z-0 top-0 left-0 bg-zinc-100">
@@ -33,13 +40,50 @@ defmodule ParaiaWeb.HomeLive do
   end
 
   def mount(_params, _session, socket) do
-    {:ok, socket |> stream_configure(:users, dom_id: &"user-#{&1.did}") |> stream(:users, [])}
+    {:ok,
+     socket
+     |> stream_configure(:users, dom_id: &"user-#{&1.did}")
+     |> stream(:users, [])
+     |> assign(page: 0)
+     |> assign(:count, nil)
+     |> assign(:end_of_timeline?, false)}
+  end
+
+  def handle_params(%{"query" => query}, _uri, socket) do
+    {users, count} = Paraia.BlueSky.search_users(query)
+
+    socket =
+      socket
+      |> stream(:users, users, reset: true)
+      |> assign(:count, count)
+      |> assign(:query, query)
+      |> assign(page: 0)
+      |> assign(:end_of_timeline?, false)
+
+    {:noreply, socket}
+  end
+
+  def handle_params(_, _uri, socket) do
+    {:noreply,
+     socket
+     |> stream(:users, [], reset: true)
+     |> assign(:query, nil)
+     |> assign(page: 0)
+     |> assign(:end_of_timeline?, false)}
   end
 
   def handle_event("search", %{"query" => query}, socket) do
-    users = Paraia.BlueSky.search_users(query)
-    socket = socket |> stream(:users, users, reset: true)
+    {:noreply, push_patch(socket, to: ~p"/?query=#{query}")}
+  end
 
-    {:noreply, socket}
+  # def handle_event("prev-page", unsigned_params, socket) do
+
+  # end
+
+  def handle_event("next-page", _unsigned_params, socket) do
+    page = socket.assigns.page + 1
+    {users, count} = Paraia.BlueSky.search_users(socket.assigns.query, page)
+
+    {:noreply, socket |> assign(:page, page) |> stream(:users, users) |> assign(:count, count)}
   end
 end

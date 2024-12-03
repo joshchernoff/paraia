@@ -689,6 +689,7 @@ defmodule ParaiaWeb.CoreComponents do
           id={"#{@id}-search-field"}
           class="w-full shadow-md text-zinc-900  rounded-md border-0 bg-white py-1.5 pl-10 pr-3 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
           placeholder="Search"
+          autocomplete="off"
           type="search"
           name="query"
           value={@value}

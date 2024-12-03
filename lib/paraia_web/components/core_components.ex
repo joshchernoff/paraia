@@ -673,4 +673,29 @@ defmodule ParaiaWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  attr :id, :string, required: true
+  attr :value, :any, required: true
+
+  def search_field(assigns) do
+    ~H"""
+    <div class="relative w-full text-zinc-400 dark:text-zinc-600 focus-within:text-zinc-600 dark:focus-within:text-zinc-400">
+      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        <.icon name="hero-magnifying-glass" />
+      </div>
+
+      <form phx-change="search" onkeydown="return event.key != 'Enter';">
+        <input
+          id={"#{@id}-search-field"}
+          class="w-full shadow-md text-zinc-900  rounded-md border-0 bg-white py-1.5 pl-10 pr-3 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          placeholder="Search"
+          type="search"
+          name="query"
+          value={@value}
+          phx-debounce="500"
+        />
+      </form>
+    </div>
+    """
+  end
 end

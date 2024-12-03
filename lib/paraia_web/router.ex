@@ -17,12 +17,6 @@ defmodule ParaiaWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", ParaiaWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", ParaiaWeb do
   #   pipe_through :api
@@ -78,6 +72,7 @@ defmodule ParaiaWeb.Router do
 
     live_session :current_user,
       on_mount: [{ParaiaWeb.UserAuth, :mount_current_user}] do
+      live "/", HomeLive
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
